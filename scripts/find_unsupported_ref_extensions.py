@@ -17,7 +17,7 @@ from urllib.parse import urlparse
 
 import yaml
 
-from src.back.utils.identify_file_type import SUPPORTED_DOC_EXTENSION_MAP
+from src.shared.utils.identify_file_type import SUPPORTED_DOC_EXTENSION_MAP
 
 
 def _extract_extension(url: str) -> str | None:

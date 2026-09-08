@@ -208,7 +208,9 @@ class ChatService:
                     fn_args = {}
 
                 try:
-                    result = await self._tool_executor.execute(fn_name, fn_args, tc_id)
+                    result = await self._tool_executor.execute(
+                        fn_name, fn_args, tc_id, ctx=self._tool_context
+                    )
                     tool_result = {
                         "role": "tool",
                         "tool_call_id": tc_id,

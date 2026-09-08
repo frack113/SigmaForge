@@ -67,10 +67,10 @@ def _validate_git_url(url: str) -> None:
         raise ValueError("URL points to localhost, which is not allowed")
     try:
         ip = ipaddress.ip_address(host)
-        if ip.is_private or ip.is_loopback or ip.is_link_local:
-            raise ValueError(f"URL points to a private/reserved IP address: {host}")
     except ValueError:
-        pass
+        return
+    if ip.is_private or ip.is_loopback or ip.is_link_local:
+        raise ValueError(f"URL points to a private/reserved IP address: {host}")
 
 
 def clone_repo(

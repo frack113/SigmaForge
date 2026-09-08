@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import inspect
 import logging
 from typing import Any
 
-from .models import ToolDef, ToolExecutor, ToolResult
+from .models import ToolContext, ToolDef, ToolExecutor, ToolResult
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ class ToolDispatcher(ToolExecutor):
         tool_name: str,
         arguments: dict[str, Any],
         tool_call_id: str,
+        ctx: ToolContext | None = None,
     ) -> ToolResult:
         tool = self._tools.get(tool_name)
         if not tool:
@@ -42,6 +44,9 @@ class ToolDispatcher(ToolExecutor):
                 f"Unknown tool '{tool_name}'. Available tools: {list(self._tools.keys())}",
             )
 
+        arguments = {k: v for k, v in arguments.items() if k != "ctx"}
+        if ctx is not None and "ctx" in inspect.signature(tool.fn).parameters:
+            arguments["ctx"] = ctx
         try:
             result = await tool.fn(**arguments)
             return ToolResult(content=str(result), tool_call_id=tool_call_id)

@@ -50,8 +50,10 @@ def _build_json_schema(fn: Any) -> dict[str, Any]:
     sig = inspect.signature(fn)
     schema: dict[str, Any] = {"type": "object", "properties": {}, "required": []}
 
+    _skipped = {"self", "ctx"}
+
     for name, param in sig.parameters.items():
-        if name == "self":
+        if name in _skipped:
             continue
 
         annotation = param.annotation

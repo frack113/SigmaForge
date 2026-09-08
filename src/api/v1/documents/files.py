@@ -172,7 +172,14 @@ async def delete_local_file(
     file_path: str,
 ) -> FileResponse:
     """Delete a local file from configured documents path and doc_registry."""
-    fs_path = Path(file_path)
+    cfg = get_config()
+    base_path = Path(cfg.local_documents_path).resolve()
+    fs_path = Path(file_path).resolve()
+
+    try:
+        fs_path.relative_to(base_path)
+    except ValueError:
+        return FileResponse(success=False, error="Path outside documents directory")
 
     if not fs_path.exists():
         return FileResponse(success=False, error=f"File does not exist: {file_path}")

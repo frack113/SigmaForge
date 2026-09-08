@@ -28,7 +28,7 @@ def _db_path() -> Path:
 
 
 def _initdb_sql() -> str:
-    sql_path = Path(__file__).parent.parent / "src" / "back" / "database" / "initdb.sql"
+    sql_path = Path(__file__).parent.parent / "src" / "infrastructure" / "database" / "initdb.sql"
     return sql_path.read_text(encoding="utf-8")
 
 
