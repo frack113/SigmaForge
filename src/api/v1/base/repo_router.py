@@ -3,6 +3,7 @@
 Replaces the duplicated github.py / spec.py patterns.
 """
 
+import asyncio
 import logging
 import re
 from datetime import datetime
@@ -193,36 +194,40 @@ def create_repo_router(
     @router.get("/repos", response_model=list[RepositoryStatus])
     async def list_repos_handler() -> list[RepositoryStatus]:
         """List all repositories."""
-        repos_dir = _get_repos_dir()
-        repos = list_repos(repos_dir=repos_dir)
-        result: list[RepositoryStatus] = []
-        for repo in repos:
-            metadata = get_metadata(repo["org"], repo["name"]) or {}
-            stored_status = metadata.get("status", "synced")
 
-            if stored_status in ("cloning", "syncing"):
-                sync_class = "btn-warning"
-            elif stored_status == "error":
-                sync_class = "btn-unknown"
-            elif include_outdated_check and is_repo_outdated(repo["org"], repo["name"]):
-                sync_class = "btn-danger"
-            else:
-                sync_class = "btn-success"
+        def _build_repo_list() -> list[RepositoryStatus]:
+            repos_dir = _get_repos_dir()
+            repos = list_repos(repos_dir=repos_dir)
+            result: list[RepositoryStatus] = []
+            for repo in repos:
+                metadata = get_metadata(repo["org"], repo["name"]) or {}
+                stored_status = metadata.get("status", "synced")
 
-            last_commit = get_last_commit_date(repo["org"], repo["name"], repos_dir=repos_dir)
-            result.append(
-                RepositoryStatus(
-                    org=repo["org"],
-                    name=repo["name"],
-                    repo_status=metadata.get("status", "synced"),
-                    last_synced=metadata.get("last_synced"),
-                    url=metadata.get("url"),
-                    branch=metadata.get("branch"),
-                    last_commit=last_commit,
-                    sync_class=sync_class,
+                if stored_status in ("cloning", "syncing"):
+                    sync_class = "btn-warning"
+                elif stored_status == "error":
+                    sync_class = "btn-unknown"
+                elif include_outdated_check and is_repo_outdated(repo["org"], repo["name"]):
+                    sync_class = "btn-danger"
+                else:
+                    sync_class = "btn-success"
+
+                last_commit = get_last_commit_date(repo["org"], repo["name"], repos_dir=repos_dir)
+                result.append(
+                    RepositoryStatus(
+                        org=repo["org"],
+                        name=repo["name"],
+                        repo_status=metadata.get("status", "synced"),
+                        last_synced=metadata.get("last_synced"),
+                        url=metadata.get("url"),
+                        branch=metadata.get("branch"),
+                        last_commit=last_commit,
+                        sync_class=sync_class,
+                    )
                 )
-            )
-        return result
+            return result
+
+        return await asyncio.to_thread(_build_repo_list)
 
     # ── ADD repo ──
 
