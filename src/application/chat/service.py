@@ -6,7 +6,7 @@ import json
 import logging
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 
 from src.application.chat.rag import RAGPipeline
 from src.application.sigma.validator import SigmaValidator
@@ -63,19 +63,25 @@ class ChatService:
         return session_id or "_default"
 
     def _get_rule(self, session_id: str | None) -> SigmaRule | None:
-        return get_session_store().get(self._sid(session_id), "_uploaded_rule")
+        return cast(
+            SigmaRule | None, get_session_store().get(self._sid(session_id), "_uploaded_rule")
+        )
 
     def _set_rule(self, session_id: str | None, rule: SigmaRule | None) -> None:
         get_session_store().set(self._sid(session_id), "_uploaded_rule", rule)
 
     def _get_history(self, session_id: str | None) -> list[dict[str, str]]:
-        return get_session_store().get(self._sid(session_id), "_history", [])
+        return cast(
+            list[dict[str, str]], get_session_store().get(self._sid(session_id), "_history", [])
+        )
 
     def _set_history(self, session_id: str | None, history: list[dict[str, str]]) -> None:
         get_session_store().set(self._sid(session_id), "_history", history)
 
     def _get_citations(self, session_id: str | None) -> list[str]:
-        return get_session_store().get(self._sid(session_id), "_last_citations", [])
+        return cast(
+            list[str], get_session_store().get(self._sid(session_id), "_last_citations", [])
+        )
 
     def _set_citations(self, session_id: str | None, citations: list[str]) -> None:
         get_session_store().set(self._sid(session_id), "_last_citations", citations)

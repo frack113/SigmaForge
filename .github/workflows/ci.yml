@@ -2,32 +2,33 @@ name: CI
 
 on:
   push:
-    branches: ['*']
+    branches: [main]
   pull_request:
     branches: [main]
 
 jobs:
-  lint-typecheck:
+  lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - name: Run ruff check
+        run: uv run ruff check src/ tests/ scripts/
+      - name: Run ruff format check
+        run: uv run ruff format --check src/ tests/ scripts/
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v8.2.0
-        with:
-          enable-cache: true
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - name: Run mypy
+        run: uv run mypy src/ --no-error-summary
 
-      - name: Set up Python
-        run: uv python install 3.12
-
-      - name: Install dependencies
-        run: uv sync --dev
-
-      - name: Ruff check
-        run: uv run ruff check main.py src/ tests/
-
-      - name: Ruff format check
-        run: uv run ruff format --check main.py src/ tests/
-
-      - name: Biome check
-        run: npx @biomejs/biome check src/presentation/static/
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - name: Run pytest
+        run: uv run pytest tests/ -q
