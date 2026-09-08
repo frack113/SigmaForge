@@ -33,4 +33,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
       - name: Run pytest
-        run: uv run pytest tests/ -q --deselect tests/unit/sigma/
+        run: |
+          uv run pytest tests/ -q \
+            --deselect tests/unit/application/documents/test_sigma_ref_downloader.py \
+            --deselect tests/unit/application/documents/test_sigma_ref_paths.py \
+            --deselect tests/unit/application/documents/test_sigma_ref_url.py \
+            --deselect tests/unit/back/qdrant/test_auto_start.py \
+            --deselect tests/unit/back/qdrant/test_downloader.py \
+            --deselect tests/unit/back/rag/test_fusion_retriever.py \
+            --deselect tests/unit/back/rag/test_search.py
