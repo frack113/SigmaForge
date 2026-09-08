@@ -208,7 +208,11 @@ class DatabaseServiceCore:
         return None
 
     def set_config(
-        self, key: str, value: dict[str, Any] | list[Any] | str | int | bool | None
+        self,
+        key: str,
+        value: dict[str, Any] | list[Any] | str | int | bool | None,
+        *,
+        persist: bool = True,
     ) -> None:
         with self._lock:
             self._writer_conn.execute(
@@ -216,6 +220,7 @@ class DatabaseServiceCore:
                 (key, json.dumps(value)),
             )
             self._writer_conn.commit()
+        if persist:
             try:
                 self.persist()
             except Exception:

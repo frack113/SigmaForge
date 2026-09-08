@@ -272,13 +272,18 @@ def delete_repo(org: str, name: str, repos_dir: Path | None = None) -> dict[str,
 
 
 def list_repos(
-    repos_dir: Path | None = None, org_filter: str | None = None
+    repos_dir: Path | None = None,
+    org_filter: str | None = None,
+    *,
+    fetch_remote: bool = False,
 ) -> list[dict[str, Any]]:
     """List all cloned repositories with their metadata.
 
     Args:
         repos_dir: Base directory for cloned repos.
         org_filter: If provided, only list repos under this org directory.
+        fetch_remote: If True, perform a network fetch per repo to get
+            the latest remote HEAD. Default False (local refs only).
     """
     repos_dir = Path(repos_dir or get_config().paths_github_dir).resolve()
     repos_dir.mkdir(parents=True, exist_ok=True)
@@ -297,23 +302,26 @@ def list_repos(
                     "name": repo_dir.name,
                     "path": str(repo_dir),
                 }
-                # gitpython provides branches, active_branch, remote().url
                 info["branch"] = repo.active_branch.name if repo.active_branch else None
                 try:
                     info["remote_url"] = repo.remote().url
                 except Exception:
                     info["remote_url"] = None
-                try:
-                    origin = repo.remotes.origin
-                    origin.fetch()
-                    remote_ref = f"origin/{info.get('branch')}"
-                    remote_head = (
-                        repo.refs[remote_ref].commit.hexsha if remote_ref in repo.refs else ""
-                    )
-                    info["remote_head"] = remote_head
-                except Exception as e:
-                    logger.warning("Fetch failed for %s/%s: %s", org_dir.name, repo_dir.name, e)
-                    info["remote_head"] = ""
+                info["remote_head"] = ""
+                if fetch_remote:
+                    try:
+                        origin = repo.remotes.origin
+                        origin.fetch()
+                        remote_ref = f"origin/{info.get('branch')}"
+                        info["remote_head"] = (
+                            repo.refs[remote_ref].commit.hexsha
+                            if remote_ref in repo.refs
+                            else ""
+                        )
+                    except Exception as e:
+                        logger.warning(
+                            "Fetch failed for %s/%s: %s", org_dir.name, repo_dir.name, e
+                        )
                 repos.append(info)
 
     return sorted(repos, key=lambda r: (r["org"], r["name"]))

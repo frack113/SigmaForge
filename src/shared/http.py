@@ -197,10 +197,12 @@ def download_file(
 
     for attempt in range(1, max_retries + 1):
         try:
-            resp = client.get(url)
-            resp.raise_for_status()
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_bytes(resp.content)
+            with client.stream("GET", url) as resp:
+                resp.raise_for_status()
+                with open(path, "wb") as f:
+                    for chunk in resp.iter_bytes(chunk_size=1024 * 1024):
+                        f.write(chunk)
             return True, None
 
         except OSError as exc:

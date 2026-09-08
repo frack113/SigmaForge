@@ -74,10 +74,13 @@ _search_embed_model_lock = threading.Lock()
 
 
 def reset_search_embed_model() -> None:
-    """Reset the cached search embedding model singleton."""
+    """Reset the cached search embedding model singleton and retriever cache."""
     global _async_embed_model
     with _search_embed_model_lock:
         _async_embed_model = None
+    from src.core.search.retrievers import reset_retriever_cache
+
+    reset_retriever_cache()
 
 
 def _get_search_embed_model() -> Any:

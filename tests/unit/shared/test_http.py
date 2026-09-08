@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -16,6 +17,32 @@ from src.shared.http import (
     _backoff_delay,
     _get_retry_after,
 )
+
+
+def _mock_stream_client(content: bytes, side_effect_error: Exception | None = None):
+    """Create a mock client whose .stream() returns a context manager yielding a response."""
+    mock_resp = MagicMock(spec=httpx.Response)
+    if side_effect_error:
+        mock_resp.raise_for_status.side_effect = side_effect_error
+    else:
+        mock_resp.raise_for_status.return_value = None
+
+    def iter_bytes(chunk_size: int = 65536):
+        for i in range(0, len(content), chunk_size):
+            yield content[i : i + chunk_size]
+
+    mock_resp.iter_bytes = iter_bytes
+
+    @contextmanager
+    def stream(method: str, url: str):
+        if side_effect_error is None:
+            yield mock_resp
+        else:
+            raise side_effect_error
+
+    mock_client = MagicMock(spec=httpx.Client)
+    mock_client.stream.side_effect = stream
+    return mock_client
 
 
 class TestCreateClient:
@@ -133,10 +160,7 @@ class TestHeadUrl:
 class TestDownloadFile:
     def test_successful_download(self, tmp_path: Path) -> None:
         output = tmp_path / "doc.md"
-        mock_resp = MagicMock(spec=httpx.Response)
-        mock_resp.content = b"hello world"
-        mock_client = MagicMock(spec=httpx.Client)
-        mock_client.get.return_value = mock_resp
+        mock_client = _mock_stream_client(b"hello world")
 
         with patch("src.shared.http.get_pooled_client", return_value=mock_client):
             ok, status = download_file("https://example.com/doc", output)
@@ -156,18 +180,25 @@ class TestDownloadFile:
 
     def test_retries_on_http_429(self, tmp_path: Path) -> None:
         output = tmp_path / "retry.md"
+
         mock_resp_429 = MagicMock(spec=httpx.Response)
         mock_resp_429.status_code = 429
         mock_resp_429.headers = {}
 
-        mock_resp_ok = MagicMock(spec=httpx.Response)
-        mock_resp_ok.content = b"content"
+        @contextmanager
+        def _cm_429(method: str, url: str):
+            yield mock_resp_429
 
+        @contextmanager
+        def _cm_ok(method: str, url: str):
+            mock_resp_ok = MagicMock(spec=httpx.Response)
+            mock_resp_ok.raise_for_status.return_value = None
+            mock_resp_ok.iter_bytes = lambda chunk_size=65536: iter([b"content"])
+            yield mock_resp_ok
+
+        cm_sequence = iter([_cm_429, _cm_ok])
         mock_client = MagicMock(spec=httpx.Client)
-        mock_client.get.side_effect = [
-            httpx.HTTPStatusError("429", request=MagicMock(), response=mock_resp_429),
-            mock_resp_ok,
-        ]
+        mock_client.stream.side_effect = lambda m, u: next(cm_sequence)(m, u)
 
         with (
             patch("src.shared.http.get_pooled_client", return_value=mock_client),
@@ -179,11 +210,22 @@ class TestDownloadFile:
 
     def test_retries_on_network_error(self, tmp_path: Path) -> None:
         output = tmp_path / "retry_net.md"
+
+        @contextmanager
+        def _cm_fail(method: str, url: str):
+            raise httpx.ConnectError("timeout")
+            yield
+
+        @contextmanager
+        def _cm_ok(method: str, url: str):
+            mock_resp = MagicMock(spec=httpx.Response)
+            mock_resp.raise_for_status.return_value = None
+            mock_resp.iter_bytes = lambda chunk_size=65536: iter([b"ok"])
+            yield mock_resp
+
+        cm_sequence = iter([_cm_fail, _cm_ok])
         mock_client = MagicMock(spec=httpx.Client)
-        mock_client.get.side_effect = [
-            httpx.ConnectError("timeout"),
-            MagicMock(content=b"ok"),
-        ]
+        mock_client.stream.side_effect = lambda m, u: next(cm_sequence)(m, u)
 
         with (
             patch("src.shared.http.get_pooled_client", return_value=mock_client),
@@ -195,8 +237,14 @@ class TestDownloadFile:
 
     def test_gives_up_after_max_retries(self, tmp_path: Path) -> None:
         output = tmp_path / "fail.md"
+
+        @contextmanager
+        def _cm_fail(method: str, url: str):
+            raise httpx.ConnectError("always fails")
+            yield
+
         mock_client = MagicMock(spec=httpx.Client)
-        mock_client.get.side_effect = httpx.ConnectError("always fails")
+        mock_client.stream.side_effect = _cm_fail
 
         with (
             patch("src.shared.http.get_pooled_client", return_value=mock_client),
@@ -211,10 +259,16 @@ class TestDownloadFile:
         output = tmp_path / "forbidden.md"
         mock_resp = MagicMock(spec=httpx.Response)
         mock_resp.status_code = 403
-        mock_client = MagicMock(spec=httpx.Client)
-        mock_client.get.side_effect = httpx.HTTPStatusError(
+        mock_resp.raise_for_status.side_effect = httpx.HTTPStatusError(
             "403", request=MagicMock(), response=mock_resp
         )
+
+        @contextmanager
+        def _cm_forbidden(method: str, url: str):
+            yield mock_resp
+
+        mock_client = MagicMock(spec=httpx.Client)
+        mock_client.stream.side_effect = _cm_forbidden
 
         with patch("src.shared.http.get_pooled_client", return_value=mock_client):
             ok, status = download_file("https://example.com/forbidden", output)
@@ -224,10 +278,7 @@ class TestDownloadFile:
 
     def test_filesystem_error(self, tmp_path: Path) -> None:
         output = Path("/nonexistent/path/doc.md")
-        mock_resp = MagicMock(spec=httpx.Response)
-        mock_resp.content = b"data"
-        mock_client = MagicMock(spec=httpx.Client)
-        mock_client.get.return_value = mock_resp
+        mock_client = _mock_stream_client(b"data")
 
         with patch("src.shared.http.get_pooled_client", return_value=mock_client):
             ok, status = download_file("https://example.com/doc", output)
@@ -239,15 +290,24 @@ class TestDownloadFile:
         mock_resp_429 = MagicMock(spec=httpx.Response)
         mock_resp_429.status_code = 429
         mock_resp_429.headers = {"Retry-After": "5"}
+        mock_resp_429.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "429", request=MagicMock(), response=mock_resp_429
+        )
 
-        mock_resp_ok = MagicMock(spec=httpx.Response)
-        mock_resp_ok.content = b"content"
+        @contextmanager
+        def _cm_429(method: str, url: str):
+            yield mock_resp_429
 
+        @contextmanager
+        def _cm_ok(method: str, url: str):
+            mock_resp_ok = MagicMock(spec=httpx.Response)
+            mock_resp_ok.raise_for_status.return_value = None
+            mock_resp_ok.iter_bytes = lambda chunk_size=65536: iter([b"content"])
+            yield mock_resp_ok
+
+        cm_sequence = iter([_cm_429, _cm_ok])
         mock_client = MagicMock(spec=httpx.Client)
-        mock_client.get.side_effect = [
-            httpx.HTTPStatusError("429", request=MagicMock(), response=mock_resp_429),
-            mock_resp_ok,
-        ]
+        mock_client.stream.side_effect = lambda m, u: next(cm_sequence)(m, u)
 
         with (
             patch("src.shared.http.get_pooled_client", return_value=mock_client),
