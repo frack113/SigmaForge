@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: ['*']
   pull_request:
     branches: [main]
 
@@ -13,9 +13,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
       - name: Run ruff check
-        run: uv run ruff check src/ tests/ scripts/
+        run: uv run ruff check main.py src/ tests/ scripts/
       - name: Run ruff format check
-        run: uv run ruff format --check src/ tests/ scripts/
+        run: uv run ruff format --check main.py src/ tests/ scripts/
+      - name: Biome check
+        run: npx @biomejs/biome check src/presentation/static/
 
   typecheck:
     runs-on: ubuntu-latest

@@ -617,7 +617,7 @@ async def cancel_action(
         "note": "Job tracking not yet implemented; no action taken.",
     }
 
-    response_content = {"data": result, "status": "accepted"}
+    response_content = {"data": result, "status": "success"}
 
     # Patch 2,5: Store with timestamp and namespace
     if _is_valid_idempotency_key(x_idempotency_key):
