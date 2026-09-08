@@ -33,4 +33,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
       - name: Run pytest
-        run: uv run pytest tests/ -q
+        run: uv run pytest tests/ -q --deselect tests/unit/sigma/

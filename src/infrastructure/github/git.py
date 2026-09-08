@@ -314,14 +314,10 @@ def list_repos(
                         origin.fetch()
                         remote_ref = f"origin/{info.get('branch')}"
                         info["remote_head"] = (
-                            repo.refs[remote_ref].commit.hexsha
-                            if remote_ref in repo.refs
-                            else ""
+                            repo.refs[remote_ref].commit.hexsha if remote_ref in repo.refs else ""
                         )
                     except Exception as e:
-                        logger.warning(
-                            "Fetch failed for %s/%s: %s", org_dir.name, repo_dir.name, e
-                        )
+                        logger.warning("Fetch failed for %s/%s: %s", org_dir.name, repo_dir.name, e)
                 repos.append(info)
 
     return sorted(repos, key=lambda r: (r["org"], r["name"]))
