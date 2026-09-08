@@ -50,8 +50,10 @@ def _build_json_schema(fn: Any) -> dict[str, Any]:
     sig = inspect.signature(fn)
     schema: dict[str, Any] = {"type": "object", "properties": {}, "required": []}
 
+    _skipped = {"self", "ctx"}
+
     for name, param in sig.parameters.items():
-        if name == "self":
+        if name in _skipped:
             continue
 
         annotation = param.annotation
@@ -164,11 +166,13 @@ def tool(fn: Any | None = None, *, description_override: str | None = None) -> A
             first_sentence = doc.strip().split("\n")[0].strip()
             params["description"] = first_sentence
 
+        has_ctx = "ctx" in inspect.signature(fn).parameters
         td = ToolDef(
             name=fn.__name__,
             description=params.get("description", ""),
             parameters=params,
             fn=fn,
+            has_ctx=has_ctx,
         )
         _tools.append(td)
         return td

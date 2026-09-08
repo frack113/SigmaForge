@@ -12,6 +12,8 @@ from src.infrastructure.github.api import (
     list_releases,
 )
 
+MOCK_TARGET = "src.infrastructure.github.api.get_async_pooled_client"
+
 
 def _mock_response(data):
     """Create a mock httpx response with synchronous json() method."""
@@ -24,7 +26,6 @@ def _mock_response(data):
 @pytest.fixture
 def mock_client():
     client = AsyncMock()
-    client.__aenter__.return_value = client
     return client
 
 
@@ -64,7 +65,7 @@ class TestListReleases:
     @pytest.mark.asyncio
     async def test_success(self, mock_client: AsyncMock, sample_releases: list[dict]) -> None:
         mock_client.get.return_value = _mock_response(sample_releases)
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_TARGET, return_value=mock_client):
             result = await list_releases("owner", "repo")
             assert len(result) == 1
             assert result[0]["tag_name"] == "v1.0.0"
@@ -73,7 +74,7 @@ class TestListReleases:
     @pytest.mark.asyncio
     async def test_with_token(self, mock_client: AsyncMock, sample_releases: list[dict]) -> None:
         mock_client.get.return_value = _mock_response(sample_releases)
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_TARGET, return_value=mock_client):
             await list_releases("owner", "repo", github_token="token-123")
             call_kwargs = mock_client.get.call_args
             headers = call_kwargs[1]["headers"]
@@ -87,7 +88,7 @@ class TestListReleases:
             "404", request=MagicMock(), response=MagicMock()
         )
         mock_client.get.return_value = mock_response
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_TARGET, return_value=mock_client):
             with pytest.raises(httpx.HTTPStatusError):
                 await list_releases("owner", "repo")
 
@@ -96,7 +97,7 @@ class TestInfoRelease:
     @pytest.mark.asyncio
     async def test_success(self, mock_client: AsyncMock, sample_release_detail: dict) -> None:
         mock_client.get.return_value = _mock_response(sample_release_detail)
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_TARGET, return_value=mock_client):
             result = await info_release("owner", "repo", "v1.0.0")
             assert result["tag_name"] == "v1.0.0"
 
@@ -105,7 +106,7 @@ class TestInfoRelease:
         self, mock_client: AsyncMock, sample_release_detail: dict
     ) -> None:
         mock_client.get.return_value = _mock_response(sample_release_detail)
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_TARGET, return_value=mock_client):
             await info_release("owner", "repo", "1.0.0")
             call_url = mock_client.get.call_args[0][0]
             assert "1.0.0" in call_url
@@ -116,7 +117,7 @@ class TestInfoRelease:
         self, mock_client: AsyncMock, sample_release_detail: dict
     ) -> None:
         mock_client.get.return_value = _mock_response(sample_release_detail)
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_TARGET, return_value=mock_client):
             await info_release("owner", "repo", "b9601")
             call_url = mock_client.get.call_args[0][0]
             assert "b9601" in call_url
@@ -126,7 +127,7 @@ class TestInfoRelease:
         self, mock_client: AsyncMock, sample_release_detail: dict
     ) -> None:
         mock_client.get.return_value = _mock_response(sample_release_detail)
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_TARGET, return_value=mock_client):
             await info_release("owner", "repo", "v2.0.0")
             call_url = mock_client.get.call_args[0][0]
             assert "v2.0.0" in call_url
@@ -134,7 +135,7 @@ class TestInfoRelease:
     @pytest.mark.asyncio
     async def test_with_token(self, mock_client: AsyncMock, sample_release_detail: dict) -> None:
         mock_client.get.return_value = _mock_response(sample_release_detail)
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_TARGET, return_value=mock_client):
             await info_release("owner", "repo", "v1.0.0", github_token="token-789")
             call_kwargs = mock_client.get.call_args
             headers = call_kwargs[1]["headers"]
@@ -162,7 +163,7 @@ class TestListReleaseFiles:
             ],
         }
         mock_client.get.return_value = _mock_response(data)
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_TARGET, return_value=mock_client):
             result = await list_release_files("owner", "repo", "v1.0.0")
             assert len(result) == 2
             assert result[0]["name"] == "file1.zip"
@@ -172,7 +173,7 @@ class TestListReleaseFiles:
     async def test_returns_empty_when_no_assets(self, mock_client: AsyncMock) -> None:
         data = {"tag_name": "v1.0.0", "assets": []}
         mock_client.get.return_value = _mock_response(data)
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_TARGET, return_value=mock_client):
             result = await list_release_files("owner", "repo", "v1.0.0")
             assert result == []
 
@@ -180,7 +181,7 @@ class TestListReleaseFiles:
     async def test_with_token(self, mock_client: AsyncMock) -> None:
         data = {"tag_name": "v1.0.0", "assets": []}
         mock_client.get.return_value = _mock_response(data)
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_TARGET, return_value=mock_client):
             await list_release_files("owner", "repo", "v1.0.0", github_token="token-abc")
             call_kwargs = mock_client.get.call_args
             headers = call_kwargs[1]["headers"]
@@ -202,7 +203,7 @@ class TestDownloadReleaseFile:
             ],
         }
         mock_client.get.return_value = _mock_response(data)
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_TARGET, return_value=mock_client):
             result = await download_release_file("owner", "repo", "target.zip", "v1.0.0")
             assert result["name"] == "target.zip"
             assert result["size"] == 500
@@ -211,14 +212,14 @@ class TestDownloadReleaseFile:
     async def test_raises_when_not_found(self, mock_client: AsyncMock) -> None:
         data = {"tag_name": "v1.0.0", "assets": []}
         mock_client.get.return_value = _mock_response(data)
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_TARGET, return_value=mock_client):
             with pytest.raises(ValueError, match="not found"):
                 await download_release_file("owner", "repo", "missing.zip", "v1.0.0")
 
     @pytest.mark.asyncio
     async def test_with_token(self, mock_client: AsyncMock, sample_release_detail: dict) -> None:
         mock_client.get.return_value = _mock_response(sample_release_detail)
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_TARGET, return_value=mock_client):
             result = await download_release_file(
                 "owner", "repo", "asset1.zip", "v1.0.0", github_token="token-456"
             )

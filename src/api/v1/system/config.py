@@ -84,18 +84,25 @@ async def update_logging_config(request: LoggingConfigUpdateRequest) -> JSONResp
         config = get_config()
         db = DatabaseService.get_instance()
 
+        changed = False
         if request.level is not None:
             config.logging_level = request.level
-            db.set_config("logging.level", request.level)
+            db.set_config("logging.level", request.level, persist=False)
+            changed = True
         if request.log_max_size is not None:
             config.logging_log_max_size = request.log_max_size
-            db.set_config("logging.log_max_size", request.log_max_size)
+            db.set_config("logging.log_max_size", request.log_max_size, persist=False)
+            changed = True
         if request.log_max_file is not None:
             config.logging_log_max_file = request.log_max_file
-            db.set_config("logging.log_max_file", request.log_max_file)
+            db.set_config("logging.log_max_file", request.log_max_file, persist=False)
+            changed = True
         if request.clean_at_startup is not None:
             config.logging_clean_at_startup = request.clean_at_startup
-            db.set_config("logging.clean_at_startup", request.clean_at_startup)
+            db.set_config("logging.clean_at_startup", request.clean_at_startup, persist=False)
+            changed = True
+        if changed:
+            db.persist()
 
         return JSONResponse(
             content={
@@ -181,22 +188,33 @@ async def update_config(request: ConfigUpdateRequest) -> JSONResponse:
                 config.qdrant_autorun_at_startup = bool(qdrant_autorun)
 
             db = DatabaseService.get_instance()
+            any_set = False
             if os_val is not None:
-                db.set_config("backend.os", os_val)
+                db.set_config("backend.os", os_val, persist=False)
+                any_set = True
             if gpu_val is not None:
-                db.set_config("backend.gpu_type", gpu_val)
+                db.set_config("backend.gpu_type", gpu_val, persist=False)
+                any_set = True
             if llama_base_url is not None:
-                db.set_config("services.llama.base_url", llama_base_url)
+                db.set_config("services.llama.base_url", llama_base_url, persist=False)
+                any_set = True
             if llama_manage is not None:
-                db.set_config("services.llama.manage_internally", llama_manage)
+                db.set_config("services.llama.manage_internally", llama_manage, persist=False)
+                any_set = True
             if llama_autorun is not None:
-                db.set_config("services.llama.autorun_at_startup", llama_autorun)
+                db.set_config("services.llama.autorun_at_startup", llama_autorun, persist=False)
+                any_set = True
             if qdrant_base_url is not None:
-                db.set_config("services.qdrant.base_url", qdrant_base_url)
+                db.set_config("services.qdrant.base_url", qdrant_base_url, persist=False)
+                any_set = True
             if qdrant_manage is not None:
-                db.set_config("services.qdrant.manage_internally", qdrant_manage)
+                db.set_config("services.qdrant.manage_internally", qdrant_manage, persist=False)
+                any_set = True
             if qdrant_autorun is not None:
-                db.set_config("services.qdrant.autorun_at_startup", qdrant_autorun)
+                db.set_config("services.qdrant.autorun_at_startup", qdrant_autorun, persist=False)
+                any_set = True
+            if any_set:
+                db.persist()
 
         return JSONResponse(
             content={

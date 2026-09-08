@@ -3,14 +3,12 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
 
-import httpx
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from src.config.settings import get_config
+from src.infrastructure.llm.llamacpp import LlamaClient
 
 logger = logging.getLogger(__name__)
 
@@ -42,9 +40,6 @@ async def explain_rule(
             content={"error": "Rule ID and text are required"},
         )
 
-    config = get_config()
-    base_url = config.llama_base_url or "http://127.0.0.1:8080"
-    url = f"{base_url.rstrip('/')}/v1/chat/completions"
     system_prompt = (
         "You are a Sigma rule expert. Explain the given Sigma rule "
         "in plain language: what it detects, the log source, the selection "
@@ -52,37 +47,22 @@ async def explain_rule(
     )
 
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(
-                url,
-                json={
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": request.text},
-                    ],
-                    "temperature": 0.3,
-                    "max_tokens": 1024,
-                },
-            )
-
-            if response.status_code == 200:
-                result: dict[str, Any] = response.json()
-                choices = result.get("choices", [])
-                explanation = ""
-                if choices:
-                    explanation = choices[0].get("message", {}).get("content", "")
-                return JSONResponse(
-                    content={
-                        "rule_id": request.rule_id,
-                        "explanation": explanation,
-                        "text": request.text,
-                    }
-                )
-            else:
-                return JSONResponse(
-                    status_code=response.status_code,
-                    content={"error": "Backend returned error"},
-                )
+        client = LlamaClient()
+        explanation = await client.chat(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": request.text},
+            ],
+            temperature=0.3,
+            max_tokens=1024,
+        )
+        return JSONResponse(
+            content={
+                "rule_id": request.rule_id,
+                "explanation": explanation,
+                "text": request.text,
+            }
+        )
     except Exception as e:
         logger.error(f"Explain error: {e}")
         return JSONResponse(status_code=500, content={"error": "An internal error occurred"})

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import shutil
 from pathlib import Path
 from typing import Any
@@ -118,7 +119,9 @@ class EmbeddingManager:
             raise DownloadError(f"Invalid repo_id '{repo_id}': {e}") from e
         temp_dir = self.embeddings_dir / "temp" / repo.owner / repo.name
         temp_dir.mkdir(parents=True, exist_ok=True)
-        downloaded_path = self.download_service.download_repo(repo, temp_dir)
+        downloaded_path = await asyncio.to_thread(
+            self.download_service.download_repo, repo, temp_dir
+        )
         temp_path = Path(downloaded_path)
 
         final_dir = self.embeddings_dir / repo.owner / repo.name

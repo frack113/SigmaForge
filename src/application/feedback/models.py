@@ -1,10 +1,11 @@
 """Feedback models and schemas."""
 
-import hashlib
 import uuid
 from datetime import datetime
 
 from pydantic import BaseModel, Field
+
+from src.shared.utils.crypto_utils import compute_sha256_str
 
 
 class FeedbackIn(BaseModel):
@@ -42,4 +43,4 @@ class FeedbackStats(BaseModel):
 
 def hash_query(query: str) -> str:
     """Generate a hash of the query for anonymity."""
-    return hashlib.sha256(query.encode()).hexdigest()[:16]
+    return compute_sha256_str(query)[:16]

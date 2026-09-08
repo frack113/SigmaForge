@@ -32,14 +32,13 @@ ENCODING_OPTIONS = ["utf-8", "latin-1", "cp1252", "ascii"]
 
 
 def read_log_file(path: Path) -> list[str]:
+    raw = path.read_bytes()
     for encoding in ENCODING_OPTIONS:
         try:
-            with open(path, encoding=encoding, errors="strict") as f:
-                return f.readlines()
+            return raw.decode(encoding).splitlines()
         except UnicodeDecodeError:
             continue
-    with open(path, encoding="utf-8", errors="replace") as f:
-        return f.readlines()
+    return raw.decode("utf-8", errors="replace").splitlines()
 
 
 def _sse(event: str, data, **extra) -> str:
@@ -88,19 +87,17 @@ async def stream_logs(
 
                 if prev_size == 0 or current_size < prev_size:
                     # First read or file truncated — full read with encoding detection
-                    for enc in ["utf-8", "latin-1", "cp1252", "ascii"]:
-                        try:
-                            with open(log_path, encoding=enc, errors="strict") as f:
-                                all_text = f.read()
-                            encoding = enc
-                            break
-                        except UnicodeDecodeError:
-                            continue
-                    else:
-                        with open(log_path, encoding="utf-8", errors="replace") as f:
-                            all_text = f.read()
-                        encoding = "utf-8"
+                    def _full_read(p: Path = log_path) -> tuple[str, str]:
+                        for enc in ENCODING_OPTIONS:
+                            try:
+                                with open(p, encoding=enc, errors="strict") as f:
+                                    return f.read(), enc
+                            except UnicodeDecodeError:
+                                continue
+                        with open(p, encoding="utf-8", errors="replace") as f:
+                            return f.read(), "utf-8"
 
+                    all_text, encoding = await asyncio.to_thread(_full_read)
                     all_lines = all_text.splitlines()
                     total = len(all_lines)
                     recent = all_lines[-effective_lines:] if effective_lines > 0 else all_lines
@@ -110,9 +107,14 @@ async def stream_logs(
                     incomplete = ""
                 else:
                     # File grew — read only the new bytes
-                    with open(log_path, encoding=encoding, errors="replace") as f:
-                        f.seek(prev_size)
-                        new_text = f.read()
+                    def _tail_read(
+                        p: Path = log_path, off: int = prev_size, enc: str = encoding
+                    ) -> str:
+                        with open(p, encoding=enc, errors="replace") as f:
+                            f.seek(off)
+                            return f.read()
+
+                    new_text = await asyncio.to_thread(_tail_read)
 
                     combined = incomplete + new_text
                     lines = combined.splitlines()
@@ -176,7 +178,7 @@ async def get_logs(
         return JSONResponse(content={"logs": [], "message": "Log file not found"})
 
     try:
-        all_lines = read_log_file(log_path)
+        all_lines = await asyncio.to_thread(read_log_file, log_path)
 
         if level:
             pattern = f" {level.upper()} "

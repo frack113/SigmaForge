@@ -16,7 +16,6 @@ from src.shared.http import download_file as http_download_file
 from src.shared.http import head_url as http_head_url
 from src.shared.utils.registry_utils import build_registry_entry
 from src.shared.utils.crypto_utils import (
-    compute_sha256_bytes,
     compute_sha256_file,
     compute_sha256_str,
 )
@@ -715,9 +714,9 @@ def _download_registry_mode(
 
         ok, _ = http_download_file(url, file_path, check_ssrf=False)
         if ok:
-            content = file_path.read_bytes()
-            content_hash = compute_sha256_bytes(content)
-            return ("ok", url_hash, content_hash, len(content))
+            content_hash = compute_sha256_file(file_path)
+            file_size = file_path.stat().st_size
+            return ("ok", url_hash, content_hash, file_size)
         logger.error("Reference download failed: %s", url)
         return ("fail", "", "", 0)
 

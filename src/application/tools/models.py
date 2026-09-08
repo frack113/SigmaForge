@@ -19,6 +19,7 @@ class ToolDef:
     description: str
     parameters: dict[str, Any]
     fn: Callable[..., Any]
+    has_ctx: bool = False
 
     def to_json_schema(self) -> dict[str, Any]:
         """Return the OpenAI-compatible tools JSON."""
@@ -48,6 +49,7 @@ class ToolExecutor:
         tool_name: str,
         arguments: dict[str, Any],
         tool_call_id: str,
+        ctx: ToolContext | None = None,
     ) -> ToolResult:
         raise NotImplementedError
 

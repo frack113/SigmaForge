@@ -43,10 +43,16 @@ class TestValidateGitUrl:
         with pytest.raises(ValueError, match="localhost"):
             _validate_git_url("https://127.0.0.1/repo.git")
 
-    def test_private_ip_not_blocked_due_to_bug(self) -> None:
-        # NOTE: The except ValueError: pass in _validate_git_url catches the
-        # intentional raise for private/reserved IPs, so they are NOT blocked.
-        _validate_git_url("https://10.0.0.1/repo.git")
+    def test_private_ip_blocked(self) -> None:
+        with pytest.raises(ValueError, match="private/reserved IP"):
+            _validate_git_url("https://10.0.0.1/repo.git")
+
+    def test_private_ip_192_blocked(self) -> None:
+        with pytest.raises(ValueError, match="private/reserved IP"):
+            _validate_git_url("https://192.168.1.1/repo.git")
+
+    def test_hostname_allowed(self) -> None:
+        _validate_git_url("https://github.com/org/repo.git")
 
 
 class TestListReposOrgFilter:

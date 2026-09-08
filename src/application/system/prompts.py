@@ -50,7 +50,8 @@ def _save_all(prompts: dict[str, Prompt]) -> None:
 
 def _ensure_loaded() -> None:
     global _prompts
-    _prompts = _load_all()
+    if not _prompts:
+        _prompts = _load_all()
 
 
 def validate_name(name: str) -> None:

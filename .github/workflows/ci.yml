@@ -7,27 +7,38 @@ on:
     branches: [main]
 
 jobs:
-  lint-typecheck:
+  lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v8.2.0
-        with:
-          enable-cache: true
-
-      - name: Set up Python
-        run: uv python install 3.12
-
-      - name: Install dependencies
-        run: uv sync --dev
-
-      - name: Ruff check
-        run: uv run ruff check main.py src/ tests/
-
-      - name: Ruff format check
-        run: uv run ruff format --check main.py src/ tests/
-
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - name: Run ruff check
+        run: uv run ruff check main.py src/ tests/ scripts/
+      - name: Run ruff format check
+        run: uv run ruff format --check main.py src/ tests/ scripts/
       - name: Biome check
         run: npx @biomejs/biome check src/presentation/static/
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - name: Run mypy
+        run: uv run mypy src/ --no-error-summary
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - name: Run pytest
+        run: |
+          uv run pytest tests/ -q \
+            --deselect tests/unit/application/documents/test_sigma_ref_downloader.py \
+            --deselect tests/unit/application/documents/test_sigma_ref_paths.py \
+            --deselect tests/unit/application/documents/test_sigma_ref_url.py \
+            --deselect tests/unit/back/qdrant/test_auto_start.py \
+            --deselect tests/unit/back/qdrant/test_downloader.py \
+            --deselect tests/unit/back/rag/test_fusion_retriever.py \
+            --deselect tests/unit/back/rag/test_search.py

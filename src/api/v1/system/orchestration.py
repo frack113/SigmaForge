@@ -89,8 +89,8 @@ async def check_service_health() -> dict[str, Any]:
     from src.infrastructure.vectorstore import get_version as get_qdrant_version
 
     config = get_config()
-    llama_version = get_llama_version() or "Not installed"
-    qdrant_version = get_qdrant_version() or "Not installed"
+    llama_version = await asyncio.to_thread(get_llama_version) or "Not installed"
+    qdrant_version = await asyncio.to_thread(get_qdrant_version) or "Not installed"
 
     base_url = config.llama_base_url or "http://127.0.0.1:8080"
     llama_host, llama_port = _parse_llama_url(base_url)
@@ -608,10 +608,14 @@ async def cancel_action(
             )
         return response
 
-    # Process cancel action
-    # TODO: Add job tracking for Growth phase (Patch 14)
+    # Job tracking not yet implemented — acknowledge receipt without
+    # claiming an actual cancellation occurred.
     job_id = request.job_id if request else "unknown"
-    result = {"job_id": job_id, "status": "cancelled"}
+    result = {
+        "job_id": job_id,
+        "status": "acknowledged",
+        "note": "Job tracking not yet implemented; no action taken.",
+    }
 
     response_content = {"data": result, "status": "success"}
 

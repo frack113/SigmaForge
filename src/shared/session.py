@@ -41,5 +41,5 @@ class SessionStore:
         self._accessed[session_id] = time.monotonic()
 
     def _evict(self) -> None:
-        oldest = min(self._accessed, key=self._accessed.get)
+        oldest = min(self._accessed, key=lambda k: self._accessed[k])
         self.delete(oldest)

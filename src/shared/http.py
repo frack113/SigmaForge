@@ -90,6 +90,60 @@ def close_all_pooled_clients() -> None:
         _pool.clear()
 
 
+# ------------------------------------------------------------------
+# Async connection pool
+# ------------------------------------------------------------------
+
+_async_pool: dict[str, httpx.AsyncClient] = {}
+
+
+def get_async_pooled_client(
+    timeout: float = DEFAULT_TIMEOUT,
+    headers: dict[str, str] | None = None,
+    follow_redirects: bool = True,
+) -> httpx.AsyncClient:
+    """Return a pooled ``httpx.AsyncClient`` keyed by (timeout, follow_redirects).
+
+    Must be called from within a running event loop. Connections are reused
+    across requests, reducing TCP handshake overhead for repeated API calls.
+    """
+    key = _pool_key(timeout, follow_redirects)
+    client = _async_pool.get(key)
+    if client is not None:
+        return client
+
+    merged: dict[str, str] = {"User-Agent": DEFAULT_USER_AGENT}
+    if headers:
+        merged.update(headers)
+
+    transport = httpx.AsyncHTTPTransport(
+        limits=httpx.Limits(
+            max_connections=100,
+            max_keepalive_connections=20,
+            keepalive_expiry=30.0,
+        ),
+    )
+
+    new_client = httpx.AsyncClient(
+        timeout=httpx.Timeout(timeout),
+        headers=merged,
+        follow_redirects=follow_redirects,
+        transport=transport,
+    )
+    _async_pool[key] = new_client
+    return new_client
+
+
+async def close_all_async_pooled_clients() -> None:
+    """Close all pooled async HTTP clients. Call at shutdown."""
+    for client in _async_pool.values():
+        try:
+            await client.aclose()
+        except Exception:
+            pass
+    _async_pool.clear()
+
+
 def create_client(
     timeout: float = DEFAULT_TIMEOUT,
     headers: dict[str, str] | None = None,
@@ -197,10 +251,12 @@ def download_file(
 
     for attempt in range(1, max_retries + 1):
         try:
-            resp = client.get(url)
-            resp.raise_for_status()
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_bytes(resp.content)
+            with client.stream("GET", url) as resp:
+                resp.raise_for_status()
+                with open(path, "wb") as f:
+                    for chunk in resp.iter_bytes(chunk_size=1024 * 1024):
+                        f.write(chunk)
             return True, None
 
         except OSError as exc:

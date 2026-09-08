@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import hashlib
 import logging
 import os
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 from src.shared.constants import NULL_UUID
+from src.shared.utils.crypto_utils import compute_sha256_file
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -504,18 +504,11 @@ class DatabaseServiceDocOps:
             return {"updated": 0, "skipped": 0, "error": 0, "incomplete": 0}
 
         def _hash_file(path: Path) -> str | None:
-            h = hashlib.sha256()
-            try:
-                with open(path, "rb") as f:
-                    while True:
-                        chunk = f.read(8192)
-                        if not chunk:
-                            break
-                        h.update(chunk)
-                return h.hexdigest()
-            except OSError as e:
-                logger.warning(f"[resync_local_file_sizes] Cannot read {path}: {e}")
+            digest = compute_sha256_file(path)
+            if not digest:
+                logger.warning(f"[resync_local_file_sizes] Cannot read {path}")
                 return None
+            return digest
 
         snapshot: list[tuple[str, str | None, str | None]] = []
         with self._lock:

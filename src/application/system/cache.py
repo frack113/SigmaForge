@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-import hashlib
 import logging
 import time
 from typing import Any
+
+from src.shared.utils.crypto_utils import compute_sha256_str
 
 logger = logging.getLogger(__name__)
 
@@ -109,4 +110,4 @@ class ResponseCache:
             SHA-256 hash as cache key
         """
         content = f"{query}:{context}"
-        return hashlib.sha256(content.encode()).hexdigest()[:16]
+        return compute_sha256_str(content)[:16]

@@ -61,6 +61,7 @@ from src.api.v1.chat.search import router as search_v1_router
 from src.api.v1.documents.spec import router as spec_v1_router
 from src.api.v1.system.system_prompt import router as prompts_v1_router
 from src.api.v1.sigma.translate import router as translate_v1_router
+from src.shared.http import close_all_async_pooled_clients
 from src.shared.service_manager import shutdown_all_services
 from src.config.settings import TEMP_DIR
 from src.presentation import STATIC_DIR
@@ -232,7 +233,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         logger.info("Config initialized.")
 
         # Start the background task dispatcher in its own thread
-        dispatcher = TaskDispatcher(poll_interval=1, max_workers=4)
+        dispatcher = TaskDispatcher(poll_interval=0.2, max_workers=4)
         app.state.dispatcher = dispatcher
         dispatcher.start()
         logger.info("Dispatcher started in background thread.")
@@ -273,6 +274,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     if dispatcher:
         dispatcher.stop()
         logger.info("Dispatcher stopped.")
+    await close_all_async_pooled_clients()
     await stop_llamacpp()
     await shutdown_all_services()
     await stop_qdrant()

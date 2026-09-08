@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-import hashlib
+import asyncio
 import logging
 import shutil
 from pathlib import Path
 from typing import Any
 
 from src.shared.constants import NULL_UUID
+from src.shared.utils.crypto_utils import compute_sha256_file, compute_sha256_str
 
 from fastapi import APIRouter, Depends, UploadFile
 from fastapi import File as FastAPIFile
@@ -116,22 +117,22 @@ async def add_local_file(
             error=f"File already exists: {file.filename}",
         )
 
-    with open(dest_path, "wb") as f:
-        shutil.copyfileobj(file.file, f)
+    def _write_and_hash() -> tuple[str, str, int]:
+        with open(dest_path, "wb") as f:
+            shutil.copyfileobj(file.file, f)
+        try:
+            content_type = identify(dest_path).value
+            content_hash = compute_sha256_file(dest_path)
+            file_size = dest_path.stat().st_size
+        except Exception:
+            logging.getLogger(__name__).error("Error reading file")
+            return "", "", 0
+        return content_type, content_hash, file_size
 
-    try:
-        content_type = identify(dest_path).value
-        file_bytes = dest_path.read_bytes()
-        content_hash = hashlib.sha256(file_bytes).hexdigest()
-        file_size = dest_path.stat().st_size
-    except Exception as e:
-        logging.getLogger(__name__).error(f"Error reading file: {e}")
-        content_type = ""
-        content_hash = ""
-        file_size = 0
+    content_type, content_hash, file_size = await asyncio.to_thread(_write_and_hash)
 
     file_rel_path = dest_path.relative_to(base_path).as_posix()
-    url_hash = hashlib.sha256(f"local/{collection_name}/{file_rel_path}".encode()).hexdigest()
+    url_hash = compute_sha256_str(f"local/{collection_name}/{file_rel_path}")
     title = dest_path.stem
 
     db = DatabaseService.get_instance()
@@ -172,7 +173,14 @@ async def delete_local_file(
     file_path: str,
 ) -> FileResponse:
     """Delete a local file from configured documents path and doc_registry."""
-    fs_path = Path(file_path)
+    cfg = get_config()
+    base_path = Path(cfg.local_documents_path).resolve()
+    fs_path = Path(file_path).resolve()
+
+    try:
+        fs_path.relative_to(base_path)
+    except ValueError:
+        return FileResponse(success=False, error="Path outside documents directory")
 
     if not fs_path.exists():
         return FileResponse(success=False, error=f"File does not exist: {file_path}")
