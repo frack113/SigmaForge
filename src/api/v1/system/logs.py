@@ -32,14 +32,13 @@ ENCODING_OPTIONS = ["utf-8", "latin-1", "cp1252", "ascii"]
 
 
 def read_log_file(path: Path) -> list[str]:
+    raw = path.read_bytes()
     for encoding in ENCODING_OPTIONS:
         try:
-            with open(path, encoding=encoding, errors="strict") as f:
-                return f.readlines()
+            return raw.decode(encoding).splitlines()
         except UnicodeDecodeError:
             continue
-    with open(path, encoding="utf-8", errors="replace") as f:
-        return f.readlines()
+    return raw.decode("utf-8", errors="replace").splitlines()
 
 
 def _sse(event: str, data, **extra) -> str:

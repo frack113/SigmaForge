@@ -232,7 +232,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         logger.info("Config initialized.")
 
         # Start the background task dispatcher in its own thread
-        dispatcher = TaskDispatcher(poll_interval=1, max_workers=4)
+        dispatcher = TaskDispatcher(poll_interval=0.2, max_workers=4)
         app.state.dispatcher = dispatcher
         dispatcher.start()
         logger.info("Dispatcher started in background thread.")

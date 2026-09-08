@@ -31,7 +31,7 @@ class TaskDispatcher:
         WorkerName.MODEL_SYNC: ModelSyncWorker,
     }
 
-    def __init__(self, poll_interval: float = 1.0, max_workers: int = 1):
+    def __init__(self, poll_interval: float = 0.2, max_workers: int = 4):
         self.poll_interval = poll_interval
         self.max_workers = max_workers
         self._running = False

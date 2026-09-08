@@ -13,7 +13,7 @@ class TestTaskDispatcherInit:
     def test_default_poll_interval(self, mock_db: MagicMock) -> None:
         with patch("src.workers.processor.DatabaseService.get_instance", return_value=mock_db):
             dispatcher = TaskDispatcher()
-            assert dispatcher.poll_interval == 1.0
+            assert dispatcher.poll_interval == 0.2
 
     def test_custom_poll_interval(self, mock_db: MagicMock) -> None:
         with patch("src.workers.processor.DatabaseService.get_instance", return_value=mock_db):
