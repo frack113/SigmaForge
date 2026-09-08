@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import hashlib
 import logging
 import shutil
 from pathlib import Path
 from typing import Any
 
 from src.shared.constants import NULL_UUID
+from src.shared.utils.crypto_utils import compute_sha256_bytes, compute_sha256_str
 
 from fastapi import APIRouter, Depends, UploadFile
 from fastapi import File as FastAPIFile
@@ -122,7 +122,7 @@ async def add_local_file(
     try:
         content_type = identify(dest_path).value
         file_bytes = dest_path.read_bytes()
-        content_hash = hashlib.sha256(file_bytes).hexdigest()
+        content_hash = compute_sha256_bytes(file_bytes)
         file_size = dest_path.stat().st_size
     except Exception as e:
         logging.getLogger(__name__).error(f"Error reading file: {e}")
@@ -131,7 +131,7 @@ async def add_local_file(
         file_size = 0
 
     file_rel_path = dest_path.relative_to(base_path).as_posix()
-    url_hash = hashlib.sha256(f"local/{collection_name}/{file_rel_path}".encode()).hexdigest()
+    url_hash = compute_sha256_str(f"local/{collection_name}/{file_rel_path}")
     title = dest_path.stem
 
     db = DatabaseService.get_instance()

@@ -41,11 +41,9 @@ async def download_sparse_model() -> JSONResponse:
 
             SPARSE_MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
-            import huggingface_hub.constants as hc
+            from src.shared.utils.hf_hub import force_hf_online
 
-            was_offline = hc.HF_HUB_OFFLINE
-            hc.HF_HUB_OFFLINE = False
-            try:
+            with force_hf_online():
                 from transformers import AutoModelForMaskedLM, AutoTokenizer
 
                 _download_progress["sparse"] = {"progress": 10, "status": "downloading tokenizer"}
@@ -57,8 +55,6 @@ async def download_sparse_model() -> JSONResponse:
                 _download_progress["sparse"] = {"progress": 70, "status": "saving to cache"}
                 tokenizer.save_pretrained(str(SPARSE_MODEL_DIR))
                 model.save_pretrained(str(SPARSE_MODEL_DIR))
-            finally:
-                hc.HF_HUB_OFFLINE = was_offline
 
             _download_progress["sparse"] = {"progress": 100, "status": "completed"}
         except Exception as e:

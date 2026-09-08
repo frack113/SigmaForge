@@ -608,12 +608,16 @@ async def cancel_action(
             )
         return response
 
-    # Process cancel action
-    # TODO: Add job tracking for Growth phase (Patch 14)
+    # Job tracking not yet implemented — acknowledge receipt without
+    # claiming an actual cancellation occurred.
     job_id = request.job_id if request else "unknown"
-    result = {"job_id": job_id, "status": "cancelled"}
+    result = {
+        "job_id": job_id,
+        "status": "acknowledged",
+        "note": "Job tracking not yet implemented; no action taken.",
+    }
 
-    response_content = {"data": result, "status": "success"}
+    response_content = {"data": result, "status": "accepted"}
 
     # Patch 2,5: Store with timestamp and namespace
     if _is_valid_idempotency_key(x_idempotency_key):
