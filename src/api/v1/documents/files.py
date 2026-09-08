@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from src.shared.constants import NULL_UUID
-from src.shared.utils.crypto_utils import compute_sha256_bytes, compute_sha256_str
+from src.shared.utils.crypto_utils import compute_sha256_file, compute_sha256_str
 
 from fastapi import APIRouter, Depends, UploadFile
 from fastapi import File as FastAPIFile
@@ -122,8 +122,7 @@ async def add_local_file(
             shutil.copyfileobj(file.file, f)
         try:
             content_type = identify(dest_path).value
-            file_bytes = dest_path.read_bytes()
-            content_hash = compute_sha256_bytes(file_bytes)
+            content_hash = compute_sha256_file(dest_path)
             file_size = dest_path.stat().st_size
         except Exception:
             logging.getLogger(__name__).error("Error reading file")

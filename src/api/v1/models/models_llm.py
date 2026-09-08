@@ -190,14 +190,17 @@ async def download_llm_model(
 
             from src.shared.utils.hf_hub import force_hf_online
 
-            with force_hf_online():
-                _raw_token = os.environ.get("HF_TOKEN")
-                hf_hub_download(
-                    repo_id=repo_id,
-                    filename=resolved_filename,
-                    local_dir=dest_dir,
-                    token=_raw_token if _raw_token else None,
-                )
+            def _download_sync() -> None:
+                with force_hf_online():
+                    _raw_token = os.environ.get("HF_TOKEN")
+                    hf_hub_download(
+                        repo_id=repo_id,
+                        filename=resolved_filename,
+                        local_dir=dest_dir,
+                        token=_raw_token if _raw_token else None,
+                    )
+
+            await asyncio.to_thread(_download_sync)
 
             db = get_database_service()
             reg = get_unified_registry()

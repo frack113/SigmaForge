@@ -43,8 +43,15 @@ class ChatService:
     """
 
     def __init__(self, use_router: bool = True) -> None:
-        self.search_engine = SearchEngine(use_router=use_router)
-        self.rag_pipeline = RAGPipeline()
+        from src.infrastructure.llm.llamacpp import LlamaClient
+
+        self._llm_client = LlamaClient()
+        self.search_engine = SearchEngine(
+            use_router=use_router, llm_client=self._llm_client
+        )
+        self.rag_pipeline = RAGPipeline(
+            search_engine=self.search_engine, llm_client=self._llm_client
+        )
         self.validator = SigmaValidator()
 
         # Tool-calling setup

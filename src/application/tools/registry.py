@@ -166,11 +166,13 @@ def tool(fn: Any | None = None, *, description_override: str | None = None) -> A
             first_sentence = doc.strip().split("\n")[0].strip()
             params["description"] = first_sentence
 
+        has_ctx = "ctx" in inspect.signature(fn).parameters
         td = ToolDef(
             name=fn.__name__,
             description=params.get("description", ""),
             parameters=params,
             fn=fn,
+            has_ctx=has_ctx,
         )
         _tools.append(td)
         return td

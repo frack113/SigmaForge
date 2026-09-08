@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import inspect
 import logging
 from typing import Any
 
@@ -45,7 +44,7 @@ class ToolDispatcher(ToolExecutor):
             )
 
         arguments = {k: v for k, v in arguments.items() if k != "ctx"}
-        if ctx is not None and "ctx" in inspect.signature(tool.fn).parameters:
+        if ctx is not None and tool.has_ctx:
             arguments["ctx"] = ctx
         try:
             result = await tool.fn(**arguments)

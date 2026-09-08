@@ -19,6 +19,7 @@ class ToolDef:
     description: str
     parameters: dict[str, Any]
     fn: Callable[..., Any]
+    has_ctx: bool = False
 
     def to_json_schema(self) -> dict[str, Any]:
         """Return the OpenAI-compatible tools JSON."""
