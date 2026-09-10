@@ -78,7 +78,9 @@ def test_point_id_is_deterministic() -> None:
     payload = {"source_file": "win.yaml", "chunk_type": "rule"}
     first = QdrantStore.make_point_id("sigma_docs", payload)
     second = QdrantStore.make_point_id("sigma_docs", payload)
-    other = QdrantStore.make_point_id("sigma_docs", {"source_file": "win.yaml", "chunk_type": "spec"})
+    other = QdrantStore.make_point_id(
+        "sigma_docs", {"source_file": "win.yaml", "chunk_type": "spec"}
+    )
 
     assert first == second
     assert first != other
