@@ -16,9 +16,34 @@
 		}
 
 		const MD_TAGS = [
-			"a", "b", "i", "em", "strong", "code", "pre", "br", "hr", "p",
-			"blockquote", "ul", "ol", "li", "h1", "h2", "h3", "h4", "h5", "h6",
-			"table", "thead", "tbody", "tfoot", "tr", "th", "td", "span"
+			"a",
+			"b",
+			"i",
+			"em",
+			"strong",
+			"code",
+			"pre",
+			"br",
+			"hr",
+			"p",
+			"blockquote",
+			"ul",
+			"ol",
+			"li",
+			"h1",
+			"h2",
+			"h3",
+			"h4",
+			"h5",
+			"h6",
+			"table",
+			"thead",
+			"tbody",
+			"tfoot",
+			"tr",
+			"th",
+			"td",
+			"span",
 		];
 		const MD_ATTRS = ["href", "title", "colspan", "rowspan"];
 
@@ -40,7 +65,7 @@
 				if (typeof DOMPurify !== "undefined") {
 					return DOMPurify.sanitize(html, {
 						ALLOWED_TAGS: MD_TAGS,
-						ALLOWED_ATTR: MD_ATTRS
+						ALLOWED_ATTR: MD_ATTRS,
 					});
 				}
 				return html;
