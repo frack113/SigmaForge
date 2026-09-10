@@ -21,10 +21,12 @@ router = APIRouter(prefix="", tags=["page-admin"])
 async def config_page(request: Request):
     """Serve the unified config dashboard page."""
     cfg = get_config().to_dict()
+    # Escape "</" so embedded JSON cannot break out of the <script> tag.
+    config_json = json.dumps(cfg).replace("</", "<\\/")
     return templates.TemplateResponse(
         request=request,
         name="config/config.html.j2",
-        context={"config": cfg, "config_json": json.dumps(cfg)},
+        context={"config": cfg, "config_json": config_json},
     )
 
 

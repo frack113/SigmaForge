@@ -1,4 +1,4 @@
-# SigmaHQ RAG
+# SigmaForge
 
 A local RAG system for Sigma detection rules.
 

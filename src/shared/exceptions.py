@@ -1,4 +1,4 @@
-"""Custom exceptions for SigmaHQ RAG."""
+"""Custom exceptions for SigmaForge."""
 
 from typing import Any
 

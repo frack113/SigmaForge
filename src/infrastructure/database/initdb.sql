@@ -1,4 +1,4 @@
--- SigmaHQ RAG - DuckDB Schema + Seed Data
+-- SigmaForge - DuckDB Schema + Seed Data
 -- Single source of truth for database initialization.
 -- All CREATE TABLE are IF NOT EXISTS and INSERT are OR IGNORE for idempotency.
 

@@ -1,6 +1,6 @@
 {% extends "data/base.html.j2" %}
 
-{% block title %}Prompts | Data Sources | SigmaHQ RAG{% endblock %}
+{% block title %}Prompts — SigmaForge{% endblock %}
 
 {% block content %}
 <div class="card">
@@ -35,20 +35,20 @@
     </div>
     <div class="card-body">
         <div class="form-group">
-            <label for="prompt-id" class="form-label">ID:</label>
-            <input type="text" id="prompt-id" class="form-control" placeholder="UUID will be generated" readonly>
+            <label for="prompt-id">ID:</label>
+            <input type="text" id="prompt-id" placeholder="UUID will be generated" readonly>
         </div>
         <div class="form-group">
-            <label for="prompt-name" class="form-label">Name (kebab-case, max 25):</label>
-            <input type="text" id="prompt-name" class="form-control" placeholder="ex: analyste-sigma" maxlength="25" disabled>
+            <label for="prompt-name">Name (kebab-case, max 25):</label>
+            <input type="text" id="prompt-name" placeholder="ex: analyste-sigma" maxlength="25" disabled>
         </div>
         <div class="form-group">
-            <label for="prompt-description" class="form-label">Description (max 100):</label>
-            <input type="text" id="prompt-description" class="form-control" placeholder="Brief description..." maxlength="100" disabled>
+            <label for="prompt-description">Description (max 100):</label>
+            <input type="text" id="prompt-description" placeholder="Brief description..." maxlength="100" disabled>
         </div>
         <div class="form-group">
-            <label for="prompt-content-input" class="form-label">Content (Markdown):</label>
-            <textarea id="prompt-content-input" class="form-control" rows="10" placeholder="Enter prompt content..." style="width:100%; min-height:250px; resize:vertical;" disabled></textarea>
+            <label for="prompt-content-input">Content (Markdown):</label>
+            <textarea id="prompt-content-input" rows="10" placeholder="Enter prompt content..." style="width:100%; min-height:250px; resize:vertical;" disabled></textarea>
         </div>
         <div class="card-footer">
             <button class="btn btn-secondary" id="btn-cancel" onclick="resetForm()" disabled>Cancel</button>

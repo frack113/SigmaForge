@@ -1,0 +1,48 @@
+{% from "shared/_dir_browser.html.j2" import dir_browser_card %}
+{% macro repo_section(intro_text, modal_h2, url_placeholder, dir_browser_id, dir_browser_title="Select Directories to Index") %}
+<div class="card">
+    <div class="github-actions">
+        <button id="add-repo-btn" class="btn btn-primary" type="button">Add Repository</button>
+        <button id="sync-all-btn" class="btn btn-success" type="button">Sync All</button>
+        <button id="refresh-btn" class="btn btn-primary" type="button">Refresh list</button>
+        <button id="download-ref-btn" class="btn btn-secondary" type="button">Download Ref</button>
+        <button id="index-btn" class="btn btn-success" type="button">Index</button>
+    </div>
+
+    <div id="repos-list" class="repos-grid"></div>
+
+    <div id="select-repo-prompt" class="select-repo-prompt" style="display: none;">
+        <p>{{ intro_text }}</p>
+    </div>
+</div>
+
+<div id="repo-detail" class="repo-detail-section" style="display: none;">
+    <div class="repo-detail-header">
+        <h2 id="selected-repo-name">Repository</h2>
+        <button id="save-detail-btn" class="btn btn-primary" type="button">Save</button>
+        <button id="close-detail-btn" class="btn btn-secondary" type="button">Close</button>
+    </div>
+
+    {{ dir_browser_card(id=dir_browser_id, mode="tree", title=dir_browser_title) }}
+</div>
+
+<div id="add-repo-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="add-repo-modal-title" style="display: none;">
+    <div class="modal-content">
+        <h2>{{ modal_h2 }}</h2>
+        <form id="add-repo-form">
+            <div class="form-group">
+                <label for="repo-url">Repository (owner/repo)</label>
+                <input type="text" id="repo-url" name="url" placeholder="{{ url_placeholder }}" required>
+            </div>
+            <div class="form-group">
+                <label for="repo-branch">Branch</label>
+                <input type="text" id="repo-branch" name="branch" placeholder="main" value="main">
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Add</button>
+                <button id="modal-cancel-btn" type="button" class="btn btn-secondary">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endmacro %}

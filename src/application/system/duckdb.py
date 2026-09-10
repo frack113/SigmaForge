@@ -26,7 +26,7 @@ class DuckDbStatus(NamedTuple):
     needs_clean: bool
 
 
-# Project root: goes up from src/application/system/ to sigmahqrag/
+# Project root: goes up from src/application/system/ to SigmaForge/
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
 # Tables that must exist per initdb.sql (CREATE TABLE IF NOT EXISTS order)

@@ -1,7 +1,7 @@
 {# Config Dashboard — sections with side-by-side cards #}
 {% extends "config/layout.html.j2" %}
 
-{% block title %}Config - SigmaHQ RAG{% endblock %}
+{% block title %}Config — SigmaForge{% endblock %}
 
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', path='/css/config.css') }}">
@@ -102,9 +102,9 @@
                             </div>
                                 <div class="config-row">
                                 <span class="text-sm" style="color:var(--text-body);margin-right:var(--space-2);">Clean at startup</span>
-                                <label class="theme-toggle" id="log-clean-toggle">
+                                <label class="toggle" id="log-clean-toggle">
                                     <input type="checkbox" id="log-clean-at-startup">
-                                    <span class="theme-slider"></span>
+                                    <span class="toggle-track"></span>
                                     <span class="theme-text-label" id="log-clean-label">No</span>
                                 </label>
                             </div>
@@ -177,9 +177,9 @@
                             <div class="config-row mb-3">
                                 <div class="form-group inline">
                                     <label>Manage</label>
-                                    <label class="theme-toggle" id="qdrant-mode-toggle">
+                                    <label class="toggle" id="qdrant-mode-toggle">
                                         <input type="checkbox" id="qdrant-manage-internally" checked onchange="Config.onQdrantModeChange()">
-                                        <span class="theme-slider"></span>
+                                        <span class="toggle-track"></span>
                                         <span class="theme-text-label" id="qdrant-mode-label">Internal</span>
                                     </label>
                                 </div>
@@ -188,9 +188,9 @@
                             <div class="config-row mb-3">
                                 <div class="form-group inline">
                                     <label>Auto start</label>
-                                    <label class="theme-toggle" id="qdrant-autostart-toggle">
+                                    <label class="toggle" id="qdrant-autostart-toggle">
                                         <input type="checkbox" id="qdrant-autorun-at-startup" checked onchange="Config.onQdrantAutostartChange()">
-                                        <span class="theme-slider"></span>
+                                        <span class="toggle-track"></span>
                                         <span class="theme-text-label" id="qdrant-autostart-label">Off</span>
                                     </label>
                                 </div>
@@ -243,9 +243,9 @@
                             <div class="config-row mb-3">
                                 <div class="form-group inline">
                                     <label>Manage</label>
-                                    <label class="theme-toggle" id="llama-mode-toggle">
+                                    <label class="toggle" id="llama-mode-toggle">
                                         <input type="checkbox" id="llama-manage-internally" checked onchange="Config.onLlamaModeChange()">
-                                        <span class="theme-slider"></span>
+                                        <span class="toggle-track"></span>
                                         <span class="theme-text-label" id="llama-mode-label">Internal</span>
                                     </label>
                                 </div>
@@ -254,9 +254,9 @@
                             <div class="config-row mb-3">
                                 <div class="form-group inline">
                                     <label>Auto start</label>
-                                    <label class="theme-toggle" id="llama-autostart-toggle">
+                                    <label class="toggle" id="llama-autostart-toggle">
                                         <input type="checkbox" id="llama-autorun-at-startup" checked onchange="Config.onLlamaAutostartChange()">
-                                        <span class="theme-slider"></span>
+                                        <span class="toggle-track"></span>
                                         <span class="theme-text-label" id="llama-autostart-label">Off</span>
                                     </label>
                                 </div>
@@ -297,7 +297,7 @@
                     <div class="card">
                         <div class="card-header"><h2>Embedding E5</h2></div>
                         <div id="emb-dim-banner" class="alert-warning-dim d-none">
-                            <strong>Dimension mismatch</strong> ??? The active embedding model dimension (<span id="emb-model-dim"></span>) differs from the Qdrant collection (<span id="emb-coll-dim"></span>). Vectors will be rejected until the collection is recreated.
+                            <strong>Dimension mismatch:</strong> The active embedding model dimension (<span id="emb-model-dim"></span>) differs from the Qdrant collection (<span id="emb-coll-dim"></span>). Vectors will be rejected until the collection is recreated.
                             <div class="mt-2">
                                 <button class="btn btn-primary btn-sm" onclick="Config.recreateAndReindex()">Recreate collection &amp; Reindex</button>
                             </div>

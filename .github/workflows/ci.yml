@@ -17,7 +17,7 @@ jobs:
       - name: Run ruff format check
         run: uv run ruff format --check main.py src/ tests/ scripts/
       - name: Biome check
-        run: npx @biomejs/biome check src/presentation/static/
+        run: npx -y @biomejs/biome@2.5.1 check src/presentation/static/
 
   typecheck:
     runs-on: ubuntu-latest

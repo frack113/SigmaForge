@@ -1,17 +1,4 @@
 (() => {
-	function showToast(message, type) {
-		if (!type) type = "info";
-		const container = document.getElementById("toast-container");
-		if (!container) return;
-		const toast = document.createElement("div");
-		toast.className = `toast ${type}`;
-		toast.textContent = message;
-		container.appendChild(toast);
-		setTimeout(() => {
-			toast.remove();
-		}, 3000);
-	}
-
 	function init() {
 		const messagesEl = document.getElementById("chat-messages");
 		const chatForm = document.getElementById("chat-form");
@@ -28,12 +15,60 @@
 			marked.setOptions({ gfm: true, breaks: true });
 		}
 
+		const MD_TAGS = [
+			"a",
+			"b",
+			"i",
+			"em",
+			"strong",
+			"code",
+			"pre",
+			"br",
+			"hr",
+			"p",
+			"blockquote",
+			"ul",
+			"ol",
+			"li",
+			"h1",
+			"h2",
+			"h3",
+			"h4",
+			"h5",
+			"h6",
+			"table",
+			"thead",
+			"tbody",
+			"tfoot",
+			"tr",
+			"th",
+			"td",
+			"span",
+		];
+		const MD_ATTRS = ["href", "title", "colspan", "rowspan"];
+
+		if (typeof DOMPurify !== "undefined") {
+			DOMPurify.addHook("afterSanitizeAttributes", (node) => {
+				if (node.tagName === "A") {
+					node.setAttribute("target", "_blank");
+					node.setAttribute("rel", "noopener noreferrer");
+				}
+			});
+		}
+
 		function renderMarkdown(text) {
 			if (typeof marked !== "undefined") {
 				const normalized = text
 					.replace(/([^\n])\n*(#{1,6}\s)/g, "$1\n\n$2")
 					.replace(/([^\n])\n*(\|)/g, "$1\n\n$2");
-				return marked.parse(normalized);
+				const html = marked.parse(normalized);
+				if (typeof DOMPurify !== "undefined") {
+					return DOMPurify.sanitize(html, {
+						ALLOWED_TAGS: MD_TAGS,
+						ALLOWED_ATTR: MD_ATTRS,
+					});
+				}
+				return html;
 			}
 			const div = document.createElement("div");
 			div.textContent = text;
@@ -229,13 +264,19 @@
 		}
 
 		function setLoading(loading) {
-			sendBtn.disabled = loading;
-			sendBtn.innerHTML = loading
-				? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;animation:spin 1s linear infinite"><circle cx="12" cy="12" r="10" stroke-dasharray="31.4 31.4" stroke-linecap="round"/></svg>'
-				: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
 			if (loading) {
+				sendBtn.innerHTML =
+					'<svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+				sendBtn.title = "Stop";
+				sendBtn.setAttribute("aria-label", "Stop");
+				sendBtn.classList.add("is-loading");
 				showTyping();
 			} else {
+				sendBtn.innerHTML =
+					'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
+				sendBtn.title = "Send";
+				sendBtn.setAttribute("aria-label", "Send");
+				sendBtn.classList.remove("is-loading");
 				hideTyping();
 			}
 		}
@@ -267,7 +308,7 @@
 						const w = document.createElement("div");
 						w.className = "chat-welcome";
 						w.innerHTML =
-							"<h2>SigmaHQ RAG</h2><p>Ask questions about Sigma detection rules</p>";
+							"<h2>SigmaForge</h2><p>Ask questions about Sigma detection rules</p>";
 						messagesEl.appendChild(w);
 						welcome = w;
 					} else {
@@ -281,7 +322,17 @@
 		}
 
 		if (newChatBtn) {
-			newChatBtn.addEventListener("click", clearChat);
+			newChatBtn.addEventListener("click", async () => {
+				const hasMessages = !!messagesEl.querySelector(".message");
+				if (!hasMessages) {
+					clearChat();
+					return;
+				}
+				const ok = await showConfirm(
+					"Start a new chat? This clears the current history.",
+				);
+				if (ok) clearChat();
+			});
 		}
 
 		loadPrompts();
@@ -473,6 +524,15 @@
 			this.style.height = "auto";
 			this.style.height = `${this.scrollHeight}px`;
 		});
+
+		input.addEventListener("keydown", (e) => {
+			if (e.key === "Enter" && !e.shiftKey) {
+				e.preventDefault();
+				chatForm.requestSubmit();
+			}
+		});
+
+		input.focus();
 	}
 
 	document.addEventListener("DOMContentLoaded", init);

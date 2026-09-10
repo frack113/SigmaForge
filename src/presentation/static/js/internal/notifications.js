@@ -1,6 +1,14 @@
 (() => {
 	const TOAST_TTL = 3500;
 
+	function escHtml(s) {
+		return String(s)
+			.replace(/&/g, "&amp;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;")
+			.replace(/"/g, "&quot;");
+	}
+
 	function createContainer() {
 		let c = document.getElementById("toast-container");
 		if (!c) {

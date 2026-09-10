@@ -91,7 +91,7 @@ async def start_qdrant(
     _started_binary_service = binary_service
 
     assert health_check is not None
-    for _ in range(10):
+    for _ in range(30):
         try:
             health = await health_check(timeout=2.0, port=config.qdrant_port)
             if health.get("status") == "active":
@@ -102,7 +102,7 @@ async def start_qdrant(
             pass
         await asyncio.sleep(1)
 
-    raise ServiceStartError("Qdrant process started but health check timed out after 10s")
+    raise ServiceStartError("Qdrant process started but health check timed out after 30s")
 
 
 async def stop_qdrant() -> None:

@@ -1,13 +1,13 @@
 {# Shared layout for all app pages #}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light dark">
-    <title>{% block title %}Sigmahqrag{% endblock %}</title>
+    <title>{% block title %}SigmaForge{% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='/favicon.ico') }}">
-    <script>!function(){var t=localStorage.getItem("sigmahqrag-theme");if(t==="dark"){document.documentElement.setAttribute("data-theme","dark")}}()</script>
+    <script>!function(){var t=localStorage.getItem("sigmaforge-theme");if(t==="dark"){document.documentElement.setAttribute("data-theme","dark")}}()</script>
     <link rel="stylesheet" href="{{ url_for('static', path='/css/base/theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/css/base/reset.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/css/base/typography.css') }}">
@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="{{ url_for('static', path='/css/components/progress-bar.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/css/components/status.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/css/components/toasts.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/base/utilities.css') }}">
     {% block styles %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -53,7 +54,7 @@
 
     {% block footer %}
     <footer>
-        <p>&copy; 2026 Sigmahqrag - Local RAG for Sigma Rules</p>
+        <p>&copy; 2026 SigmaForge — Local RAG for Sigma Rules</p>
     </footer>
     {% endblock %}
 

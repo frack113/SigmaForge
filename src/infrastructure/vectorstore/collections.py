@@ -105,6 +105,7 @@ def _create_payload_indexes_sync(client, collection_name: str) -> None:
                 collection_name=collection_name,
                 field_name=field_name,
                 field_schema=field_type,
+                wait=False,
             )
         except Exception:
             logger.debug(

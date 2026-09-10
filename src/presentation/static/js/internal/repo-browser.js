@@ -114,13 +114,13 @@ class RepoBrowser {
 			);
 			const result = await response.json();
 			if (result.success) {
-				alert("Syncing repository...");
+				showToast("Syncing repository...");
 				this.loadRepos();
 			} else {
-				alert(result.error || "Failed to sync");
+				showToast(result.error || "Failed to sync", "error");
 			}
 		} catch {
-			alert("Failed to sync repository");
+			showToast("Failed to sync repository", "error");
 		}
 	}
 
@@ -143,10 +143,10 @@ class RepoBrowser {
 				}
 				this.loadRepos();
 			} else {
-				alert(result.error || "Failed to delete");
+				showToast(result.error || "Failed to delete", "error");
 			}
 		} catch {
-			alert("Failed to delete repository");
+			showToast("Failed to delete repository", "error");
 		}
 	}
 
@@ -235,8 +235,14 @@ class RepoBrowser {
 	}
 
 	closeModal() {
-		document.getElementById("add-repo-modal").style.display = "none";
-		document.getElementById("add-repo-form").reset();
+		const modal = document.getElementById("add-repo-modal");
+		if (modal) {
+			modal.style.display = "none";
+			modal.setAttribute("aria-hidden", "true");
+			const triggerBtn = document.getElementById("add-repo-btn");
+			if (triggerBtn) triggerBtn.focus();
+			document.getElementById("add-repo-form").reset();
+		}
 	}
 
 	isWorkerActive(status) {
@@ -360,7 +366,7 @@ class RepoBrowser {
 			document.getElementById("repo-branch").value.trim() || "main";
 
 		if (!url) {
-			alert("Please enter a repository");
+			showToast("Please enter a repository", "error");
 			return;
 		}
 
@@ -382,10 +388,10 @@ class RepoBrowser {
 				this.closeModal();
 				this.loadRepos();
 			} else {
-				alert(result.error || "Failed to add repository");
+				showToast(result.error || "Failed to add repository", "error");
 			}
 		} catch {
-			alert("Failed to add repository");
+			showToast("Failed to add repository", "error");
 		}
 	}
 
@@ -418,7 +424,27 @@ class RepoBrowser {
 		// add-repo modal
 		on("add-repo-btn", "click", () => {
 			const modal = byId("add-repo-modal");
-			if (modal) modal.style.display = "block";
+			if (modal) {
+				modal.style.display = "block";
+				modal.setAttribute("aria-hidden", "false");
+				// Trap focus inside modal
+				const firstFocusable = modal.querySelector('input[type="text"]');
+				if (firstFocusable) {
+					firstFocusable.focus();
+					firstFocusable.select();
+				}
+				// Close on Escape
+				const handleKeydown = (e) => {
+					if (e.key === "Escape") {
+						modal.style.display = "none";
+						modal.setAttribute("aria-hidden", "true");
+						const triggerBtn = document.getElementById("add-repo-btn");
+						if (triggerBtn) triggerBtn.focus();
+						document.removeEventListener("keydown", handleKeydown);
+					}
+				};
+				document.addEventListener("keydown", handleKeydown);
+			}
 		});
 
 		on("modal-cancel-btn", "click", () => this.closeModal());
@@ -443,13 +469,13 @@ class RepoBrowser {
 				});
 				const result = await response.json();
 				if (result.success) {
-					alert("Sync started for all repositories...");
+					showToast("Sync started for all repositories...");
 					self.loadRepos();
 				} else {
-					alert(result.error || "Failed to sync all");
+					showToast(result.error || "Failed to sync all", "error");
 				}
 			} catch {
-				alert("Failed to sync all repositories");
+				showToast("Failed to sync all repositories", "error");
 			} finally {
 				this.disabled = false;
 				this.textContent = "Sync All";

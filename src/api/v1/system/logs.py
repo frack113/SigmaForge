@@ -23,7 +23,7 @@ def get_logs_dir() -> Path:
 
 
 LOG_FILES = {
-    "system": "sigmahqrag.log",
+    "system": "sigmaforge.log",
     "llamacpp": "llama.cpp.log",
     "qdrant": "qdrant.log",
 }

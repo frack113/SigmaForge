@@ -137,7 +137,7 @@ def _setup_logging(level: str = "INFO", max_size: str = "10M", max_files: int = 
     """Setup logging to file with rotation."""
     from src.config.settings import LOGS_DIR
 
-    log_file = LOGS_DIR / "sigmahqrag.log"
+    log_file = LOGS_DIR / "sigmaforge.log"
     log_level = getattr(logging, level.upper(), logging.INFO)
     LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -207,6 +207,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     old_stderr = sys.stderr
     sys.stderr = StringIO()
 
+    def _status(message: str) -> None:
+        print(f"  {message}", file=old_stderr, flush=True)
+
     try:
         db = DatabaseService()
         db.initialize()
@@ -242,6 +245,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         logger.info("Services validated.")
 
         if not setup_mode:
+            _status("Starting llama.cpp...")
             try:
                 await start_llamacpp()
                 logger.info("llama.cpp started.")
@@ -249,6 +253,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
                 logger.warning("llama.cpp auto-start skipped: %s", e)
 
             qdrant_started = False
+            _status("Starting Qdrant...")
             try:
                 await start_qdrant()
                 qdrant_started = True
@@ -257,6 +262,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
                 logger.warning("Qdrant auto-start skipped: %s", e)
 
             if qdrant_started:
+                _status("Initializing Qdrant collections...")
                 await _init_qdrant_collections()
                 logger.info("Qdrant collections initialized.")
         else:
@@ -300,7 +306,7 @@ def _validate_services() -> None:
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     app = FastAPI(
-        title="SigmaHQ RAG",
+        title="SigmaForge",
         version="0.1.0",
         description="Local RAG system for Sigma rules",
         lifespan=lifespan,

@@ -13,7 +13,7 @@ def test_chat_page_loads() -> None:
     client = TestClient(app)
     resp = client.get("/chat")
     assert resp.status_code == 200
-    assert "Sigmahqrag" in resp.text
+    assert "SigmaForge" in resp.text
     assert "Chat" in resp.text
 
 

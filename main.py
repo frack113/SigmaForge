@@ -1,4 +1,4 @@
-"""SigmaHQ Rag - Application entry point."""
+"""SigmaForge - Application entry point."""
 
 import asyncio
 import sys
