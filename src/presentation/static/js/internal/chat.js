@@ -283,7 +283,7 @@
 						const w = document.createElement("div");
 						w.className = "chat-welcome";
 						w.innerHTML =
-							"<h2>SigmaHQ RAG</h2><p>Ask questions about Sigma detection rules</p>";
+							"<h2>SigmaForge</h2><p>Ask questions about Sigma detection rules</p>";
 						messagesEl.appendChild(w);
 						welcome = w;
 					} else {

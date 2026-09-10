@@ -1,5 +1,5 @@
 (() => {
-	const STORAGE_KEY = "sigmahqrag-theme";
+	const STORAGE_KEY = "sigmaforge-theme";
 
 	function getTheme() {
 		return localStorage.getItem(STORAGE_KEY) || "light";

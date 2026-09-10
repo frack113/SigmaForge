@@ -200,7 +200,7 @@ def _build_test_app():
     """Build a minimal FastAPI app with only the search endpoint."""
     from fastapi import FastAPI, HTTPException
 
-    app = FastAPI(title="SigmaHQ RAG — test")
+    app = FastAPI(title="SigmaForge — test")
 
     @app.post("/search")
     async def search(request: _SearchRequest) -> dict:
