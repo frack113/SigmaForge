@@ -1,6 +1,6 @@
 """Application constants - single source of truth for cross-cutting values."""
 
-SCHEMA_VERSION = 20260619
+SCHEMA_VERSION = 20260704
 
 SIGMA_SPEC_REPO = "https://github.com/SigmaHQ/sigma-specification"
 SIGMA_SPEC_REF = "main"

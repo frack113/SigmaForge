@@ -1,5 +1,4 @@
 {% extends "data/base.html.j2" %}
-{% from "shared/_dir_browser.html.j2" import dir_browser_card %}
 {% from "shared/_repo_section.html.j2" import repo_section %}
 
 {% block title %}GitHub Repositories — SigmaHQ RAG{% endblock %}
@@ -8,13 +7,14 @@
 <h1>GitHub Repositories</h1>
 <p>Manage GitHub repositories for Sigma rule indexing.</p>
 
-{% repo_section(
+{{ repo_section(
     intro_text="Click \"Browse\" on a repository to view and select directories for indexing.",
     modal_h2="Add GitHub Repository",
     url_placeholder="SigmaHQ/sigma",
     dir_browser_id="github",
     dir_browser_title="Select Directories to Index"
-) %}
+) }}
+{% endblock %}
 
 {% block scripts %}
 {{ super() }}
