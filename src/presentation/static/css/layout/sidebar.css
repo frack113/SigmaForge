@@ -80,3 +80,32 @@
 	pointer-events: none;
 	opacity: 0.6;
 }
+
+/* Collapsed sidebar state */
+.app-sidebar.collapsed {
+	width: 60px;
+}
+
+.app-sidebar.collapsed .sidebar-nav a {
+	padding: var(--space-2) 0;
+}
+
+.app-sidebar.collapsed .sidebar-nav a span:not(.sidebar-nav-icon) {
+	display: none;
+	opacity: 0;
+}
+
+.app-sidebar.collapsed .sidebar-nav a::before {
+	content: attr(aria-label);
+	display: inline-block;
+	width: auto;
+	margin-right: var(--space-3);
+	color: var(--text-sidebar);
+	font-size: var(--text-xs);
+	white-space: nowrap;
+}
+
+/* Adjust main content when sidebar is collapsed */
+.app-sidebar.collapsed + .app-main {
+	margin-left: 60px;
+}

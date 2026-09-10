@@ -1,6 +1,6 @@
 {% extends "shared/layout.html.j2" %}
 
-{% block title %}Chat - SigmaHQ RAG{% endblock %}
+{% block title %}Chat — SigmaHQ RAG{% endblock %}
 
 {% block body_class %}chat-page{% endblock %}
 
@@ -11,7 +11,7 @@
 
 {% block sidebar %}
 <div class="chat-sidebar-actions">
-    <button class="btn btn-secondary" id="new-chat-btn" title="Nouvelle discussion">+ New Chat</button>
+    <button class="btn btn-secondary" id="new-chat-btn" title="Start a new chat">+ New Chat</button>
     <div class="chat-sidebar-group">
         <label class="chat-sidebar-label" for="prompt-select">System Prompt</label>
         <select id="prompt-select" class="chat-sidebar-select">
@@ -56,6 +56,7 @@
 {% block scripts %}
 {{ super() }}
 <script src="{{ url_for('static', path='/js/external/marked.min.js') }}"></script>
+<script src="{{ url_for('static', path='/js/external/dompurify.min.js') }}"></script>
 <script>
     window.__INITIAL_PROMPTS = {{ prompts | tojson | safe }};
 </script>

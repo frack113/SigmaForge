@@ -1,0 +1,41 @@
+/* Shared utility classes (spacing, width, layout, display) — loaded globally */
+
+.mt-2 {
+	margin-top: var(--space-2);
+}
+.mt-3 {
+	margin-top: var(--space-3);
+}
+.mt-4 {
+	margin-top: var(--space-4);
+}
+.mb-3 {
+	margin-bottom: var(--space-3);
+}
+.mb-4 {
+	margin-bottom: var(--space-4);
+}
+.w-70 {
+	width: 70px;
+}
+.w-80 {
+	width: 80px;
+}
+.min-w-200 {
+	min-width: 200px;
+}
+.flex-row {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 8px;
+}
+.d-none {
+	display: none;
+}
+.card-flex-2 {
+	flex: 2;
+}
+.card-flex-1 {
+	flex: 1;
+}

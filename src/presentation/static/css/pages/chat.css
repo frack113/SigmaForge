@@ -316,6 +316,15 @@ body.chat-page .app-sidebar {
 	cursor: not-allowed;
 }
 
+#send-btn.is-loading {
+	background: var(--color-danger, #dc2626);
+}
+
+#send-btn.is-loading:hover {
+	background: var(--color-danger, #dc2626);
+	opacity: 0.85;
+}
+
 #send-btn svg {
 	width: 18px;
 	height: 18px;

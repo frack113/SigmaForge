@@ -1,12 +1,12 @@
 {# Global header #}
 <header>
     <div class="header-left">
-        <h1>Sigmahqrag</h1>
+        <h1>SigmaHQ RAG</h1>
         <nav aria-label="Main navigation">
             <ul>
                 <li><a href="/chat" {% if request.url.path == '/chat' or request.url.path == '/' %}class="active"{% endif %}>Chat</a></li>
                 <li><a href="/data" {% if '/data' in request.url.path %}class="active"{% endif %}>Data</a></li>
-                <li><a href="/config" {% if '/config/' in request.url.path %}class="active"{% endif %}>Config</a></li>
+                <li><a href="/config" {% if '/config' in request.url.path %}class="active"{% endif %}>Config</a></li>
                 <li><a href="/logs" {% if '/logs' in request.url.path %}class="active"{% endif %}>Logs</a></li>
                 <li><a href="/dashboard" {% if '/dashboard' in request.url.path %}class="active"{% endif %}>Dashboard</a></li>
             </ul>
@@ -16,15 +16,29 @@
         <div id="service-alert" class="service-alert" style="display:none">
             <a href="/config">⚠ Check Config</a>
         </div>
-        <label class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+<label class="toggle" aria-label="Toggle theme" title="Toggle theme">
             <input type="checkbox" id="theme-toggle-checkbox">
-            <span class="theme-toggle-track">
-                <span class="theme-toggle-knob"></span>
-                <span class="theme-toggle-icons">
-                    <span class="theme-icon sun-icon">☀</span>
-                    <span class="theme-icon moon-icon">☾</span>
-                </span>
-            </span>
-        </label>
+            <span class="toggle-track"></span>
+        </button>
+        <button class="sidebar-toggle" aria-label="Toggle sidebar" title="Toggle sidebar">
+            <span class="sidebar-toggle-icon">☰</span>
+        </button>
     </div>
+    <script>
+        (() => {
+            const sidebar = document.querySelector('.app-sidebar');
+            const toggle = document.querySelector('.sidebar-toggle');
+            if (sidebar && toggle) {
+                let collapsed = localStorage.getItem('sidebar-collapsed') === '1';
+                sidebar.classList.toggle('collapsed', collapsed);
+                toggle.setAttribute('aria-pressed', collapsed);
+                toggle.addEventListener('click', () => {
+                    collapsed = !sidebar.classList.contains('collapsed');
+                    sidebar.classList.toggle('collapsed', collapsed);
+                    toggle.setAttribute('aria-pressed', collapsed);
+                    localStorage.setItem('sidebar-collapsed', collapsed ? '1' : '0');
+                });
+            }
+        })();
+    </script>
 </header>

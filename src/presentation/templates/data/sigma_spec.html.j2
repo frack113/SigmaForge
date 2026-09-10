@@ -1,57 +1,20 @@
 {% extends "data/base.html.j2" %}
 {% from "shared/_dir_browser.html.j2" import dir_browser_card %}
+{% from "shared/_repo_section.html.j2" import repo_section %}
 
-{% block title %}Specification Repositories - Data Sources{% endblock %}
+{% block title %}Specification Repositories — SigmaHQ RAG{% endblock %}
 
 {% block page_content %}
 <h1>Specification Repositories</h1>
 <p>Manage GitHub repositories for Sigma specification indexing.</p>
 
-<div class="card">
-    <div class="github-actions">
-        <button id="add-repo-btn" class="btn btn-primary" type="button">Add Repository</button>
-        <button id="sync-all-btn" class="btn btn-success" type="button">Sync All</button>
-        <button id="refresh-btn" class="btn btn-primary" type="button">Refresh list</button>
-        <button id="index-btn" class="btn btn-success" type="button">Index</button>
-    </div>
-
-    <div id="repos-list" class="repos-grid"></div>
-
-    <div id="select-repo-prompt" class="select-repo-prompt" style="display: none;">
-        <p>Click "Browse" on a repository to view and select directories for indexing.</p>
-    </div>
-</div>
-
-<div id="repo-detail" class="repo-detail-section" style="display: none;">
-    <div class="repo-detail-header">
-        <h2 id="selected-repo-name">Repository</h2>
-                <button id="save-detail-btn" class="btn btn-primary" type="button">Save</button>
-        <button id="close-detail-btn" class="btn btn-secondary" type="button">Close</button>
-    </div>
-
-    {{ dir_browser_card(id="spec", mode="tree", title="Select Directories to Index") }}
-</div>
-
-<div id="add-repo-modal" class="modal" style="display: none;">
-    <div class="modal-content">
-        <h2>Add Specification Repository</h2>
-        <form id="add-repo-form">
-            <div class="form-group">
-                <label for="repo-url">Repository (owner/repo)</label>
-                <input type="text" id="repo-url" name="url" placeholder="SigmaHQ/sigma-specification" required>
-            </div>
-            <div class="form-group">
-                <label for="repo-branch">Branch</label>
-                <input type="text" id="repo-branch" name="branch" placeholder="main" value="main">
-            </div>
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Add</button>
-                <button id="modal-cancel-btn" type="button" class="btn btn-secondary">Cancel</button>
-            </div>
-        </form>
-    </div>
-</div>
-{% endblock %}
+{% repo_section(
+    intro_text="Click \"Browse\" on a repository to view and select directories for indexing.",
+    modal_h2="Add Specification Repository",
+    url_placeholder="SigmaHQ/sigma-specification",
+    dir_browser_id="spec",
+    dir_browser_title="Select Directories to Index"
+) %}
 
 {% block scripts %}
 {{ super() }}
