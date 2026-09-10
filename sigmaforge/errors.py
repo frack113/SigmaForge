@@ -23,3 +23,7 @@ class EmbeddingError(SigmaForgeError):
 
 class LlamaError(SigmaForgeError):
     pass
+
+
+class SearchError(SigmaForgeError):
+    pass
