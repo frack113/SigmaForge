@@ -35,6 +35,8 @@ jobs:
       - name: Run pytest
         run: |
           uv run pytest tests/ -q \
+            -m "not e2e" \
+            --ignore tests/e2e \
             --deselect tests/unit/application/documents/test_sigma_ref_downloader.py \
             --deselect tests/unit/application/documents/test_sigma_ref_paths.py \
             --deselect tests/unit/application/documents/test_sigma_ref_url.py \
@@ -42,3 +44,13 @@ jobs:
             --deselect tests/unit/back/qdrant/test_downloader.py \
             --deselect tests/unit/back/rag/test_fusion_retriever.py \
             --deselect tests/unit/back/rag/test_search.py
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - name: Install Playwright browser
+        run: uv run playwright install --with-deps chromium
+      - name: Run e2e tests
+        run: uv run pytest tests/e2e -q -m e2e
