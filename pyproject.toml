@@ -80,11 +80,16 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "--import-mode=importlib"
 pythonpath = ["."]
+markers = [
+    "e2e: end-to-end UI tests that start a live server and browser",
+]
 
 [dependency-groups]
 dev = [
     "mypy",
+    "playwright>=1.48",
     "pre-commit>=4.6.0",
+    "pytest-playwright>=0.6",
     "pytest>=9.0.3",
     "pytest-asyncio>=1.4.0",
     "pytest-cov>=7.1.0",
